@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Image Dashboard</title>
+
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/settings.css') }}">
+
+</head>
+<body>
+    <!-- Mobile Toggle Button -->
+    <button class="mobile-toggle" id="mobileToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="toggle-btn" id="sidebarToggle">
+            <i class="fas fa-chevron-left"></i>
+        </div>
+        <!-- Logo Section -->
+        <div class="sidebar-header">
+            <img src="{{ url_for('static', filename='image_logo.png') }}" alt="Image Registrars" class="logo-img">
+            <h5 class="text-white mb-1">Image Dashboard</h5>
+            <small class="text-white-50">Registration System</small>
+        </div>
+
+        <!-- Navigation Menu -->
+        <div class="sidebar-nav">
+            <ul class="list-unstyled">
+                <!-- Dashboard -->
+                <li class="nav-item">
+                    <a href="{{ url_for('dashboard') }}" class="nav-link">
+                        <div class="nav-icon">
+                            <i class="fas fa-tachometer-alt"></i>
+                        </div>
+                        <span>Dashboard</span>
+                        <div class="collapsed-tooltip">Dashboard</div>
+                    </a>
+                </li>
+
+                <!-- MasterFile Records -->
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <div class="nav-icon">
+                            <i class="fas fa-images"></i>
+                        </div>
+                        <span>MasterFile Records</span>
+                        <div class="collapsed-tooltip">MasterFile Records</div>
+                    </a>
+                </li>
+
+                {% if role == '1' %}
+                <!-- Settings - ACTIVE -->
+                <li class="nav-item">
+                    <a href="{{ url_for('settings') }}" class="nav-link active">
+                        <div class="nav-icon">
+                            <i class="fas fa-cog"></i>
+                        </div>
+                        <span>Settings</span>
+                        <div class="collapsed-tooltip">Settings</div>
+                    </a>
+                </li>
+                
+                <!-- Users -->
+                <li class="nav-item">
+                    <a href="" class="nav-link">
+                        <div class="nav-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <span>Users</span>
+                        <div class="collapsed-tooltip">Users</div>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+
+        <!-- Logout Button -->
+        <div class="sidebar-footer">
+            <form action="" method="post" class="w-100">
+                <button type="submit" class="btn btn-outline-light w-100" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt me-2"></i>
+                    <span>Logout</span>
+                </button>
+                <div class="logout-tooltip">Logout</div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title mb-2">System Settings</h1>
+                <p class="text-muted mb-0">Configure user management and system variables</p>
+            </div>
+            <div class="d-flex align-items-center">
+                <div class="user-section">
+                    <div class="text-center">
+                        <div class="user-avatar">
+                            {{ username[0]|upper }}
+                        </div>
+                        <h6 class="mb-0 text-black">Welcome {{ username }},</h6>
+                        <small class="text-black-50">
+                            {% if role == '1' %}
+                                <i class="fas fa-circle text-success" style="font-size: 8px;"></i> Administrator
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Container -->
+        <div class="settings-container">
+            <!-- Mode Selector -->
+            <div class="mode-selector">
+                <div class="text-center mb-3">
+                    <h5 class="mb-0">Settings Mode</h5>
+                    <small class="text-muted">Switch between different configuration modes</small>
+                </div>
+                <div class="d-flex justify-content-center">
+                    <div class="btn-group" role="group" aria-label="Settings mode">
+                        <button type="button" class="btn btn-outline-primary mode-btn active" id="userModeBtn">
+                            <i class="fas fa-user-plus me-2"></i>User Management
+                        </button>
+                        <button type="button" class="btn btn-outline-primary mode-btn" id="variableModeBtn">
+                            <i class="fas fa-sliders-h me-2"></i>Variable Configuration
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Success/Error Messages -->
+            <div class="alert alert-success success-message" id="successMessage" role="alert">
+                <i class="fas fa-check-circle me-2"></i>
+                <span id="successText">Settings saved successfully!</span>
+            </div>
+            
+            <div class="alert alert-danger error-message" id="errorMessage" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                <span id="errorText">An error occurred. Please try again.</span>
+            </div>
+
+            <!-- User Management Mode -->
+            <div id="userManagementMode">
+                <div class="card settings-card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-user-plus me-2 text-primary"></i>
+                            Add New User
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="addUserForm" action="" method="POST">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="username" class="form-label">Username *</label>
+                                    <input type="text" class="form-control" id="username" name="username" required>
+                                    <div class="form-text">Must be 3-20 characters, letters and numbers only</div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="email" class="form-label">Email Address *</label>
+                                    <input type="email" class="form-control" id="email" name="email" required>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="password" class="form-label">Password *</label>
+                                    <div class="position-relative">
+                                        <input type="password" class="form-control" id="password" name="password" required>
+                                        <span class="password-toggle" id="togglePassword">
+                                            <i class="fas fa-eye"></i>
+                                        </span>
+                                    </div>
+                                    <div class="form-text">Minimum 8 characters with uppercase, lowercase, and number</div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="confirmPassword" class="form-label">Confirm Password *</label>
+                                    <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="role" class="form-label">User Role *</label>
+                                    <select class="form-select" id="role" name="role" required>
+                                        <option value="" selected disabled>Select a role</option>
+                                        <option value="1">Administrator</option>
+                                        <option value="2">Manager</option>
+                                        <option value="3">User</option>
+                                        <option value="4">Viewer</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="status" class="form-label">Account Status</label>
+                                    <select class="form-select" id="status" name="status">
+                                        <option value="active" selected>Active</option>
+                                        <option value="inactive">Inactive</option>
+                                        <option value="suspended">Suspended</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-primary px-4" id="addUserBtn">
+                                    <i class="fas fa-user-plus me-2"></i>Add User
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary ms-2" id="resetUserForm">
+                                    <i class="fas fa-redo me-2"></i>Reset Form
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Existing Users Table -->
+                <div class="card settings-card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-users me-2 text-primary"></i>
+                            Existing Users
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Email</th>
+                                        <th>Role</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user in users %}
+                                    <tr>
+                                        <td>{{ user.username }}</td>
+                                        <td>{{ user.email }}</td>
+                                        <td>
+                                            {% if user.role == '1' %}
+                                            <span class="badge bg-danger">Admin</span>
+                                            {% elif user.role == '2' %}
+                                            <span class="badge bg-warning">Manager</span>
+                                            {% elif user.role == '3' %}
+                                            <span class="badge bg-primary">User</span>
+                                            {% else %}
+                                            <span class="badge bg-secondary">Viewer</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if user.status == 'active' %}
+                                            <span class="badge bg-success">Active</span>
+                                            {% elif user.status == 'inactive' %}
+                                            <span class="badge bg-secondary">Inactive</span>
+                                            {% else %}
+                                            <span class="badge bg-danger">Suspended</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary" onclick="editUser('{{ user.id }}')">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger" onclick="deleteUser('{{ user.id }}')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Variable Configuration Mode -->
+            <div id="variableConfigMode" style="display: none;">
+                <div class="card settings-card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-cogs me-2 text-primary"></i>
+                            System Variables
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="variableForm" action="" method="POST">
+                            {% for variable in variables %}
+                            <div class="variable-card">
+                                <div class="row align-items-center">
+                                    <div class="col-md-8">
+                                        <h6 class="mb-1">{{ variable.display_name }}</h6>
+                                        <p class="text-muted mb-0 small">{{ variable.description }}</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        {% if variable.type == 'number' %}
+                                        <input type="number" 
+                                               class="form-control" 
+                                               name="{{ variable.name }}" 
+                                               value="{{ variable.value }}"
+                                               step="{{ variable.step|default('1') }}"
+                                               min="{{ variable.min|default('') }}"
+                                               max="{{ variable.max|default('') }}">
+                                        {% elif variable.type == 'select' %}
+                                        <select class="form-select" name="{{ variable.name }}">
+                                            {% for option in variable.options %}
+                                            <option value="{{ option.value }}" 
+                                                    {% if option.value == variable.value %}selected{% endif %}>
+                                                {{ option.label }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                        {% elif variable.type == 'boolean' %}
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" 
+                                                   type="checkbox" 
+                                                   name="{{ variable.name }}" 
+                                                   id="{{ variable.name }}"
+                                                   {% if variable.value == 'true' or variable.value == true %}checked{% endif %}>
+                                            <label class="form-check-label" for="{{ variable.name }}">
+                                                {{ 'Enabled' if variable.value else 'Disabled' }}
+                                            </label>
+                                        </div>
+                                        {% else %}
+                                        <input type="text" 
+                                               class="form-control" 
+                                               name="{{ variable.name }}" 
+                                               value="{{ variable.value }}">
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-primary px-4" id="saveVariablesBtn">
+                                    <i class="fas fa-save me-2"></i>Save All Variables
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary ms-2" onclick="resetVariables()">
+                                    <i class="fas fa-undo me-2"></i>Reset to Defaults
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- System Information -->
+                <div class="card settings-card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-info-circle me-2 text-primary"></i>
+                            System Information
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <small class="text-muted">Server Time</small>
+                                    <p class="mb-0">{{ current_time }}</p>
+                                </div>
+                                <div class="mb-3">
+                                    <small class="text-muted">Total Users</small>
+                                    <p class="mb-0">{{ total_users }}</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <small class="text-muted">Last Backup</small>
+                                    <p class="mb-0">{{ last_backup }}</p>
+                                </div>
+                                <div class="mb-3">
+                                    <small class="text-muted">System Version</small>
+                                    <p class="mb-0">v2.1.0</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Sidebar functionality (from original template)
+        document.getElementById('mobileToggle').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.style.marginLeft = sidebar.style.marginLeft === '0px' ? '-260px' : '0px';
+        });
+
+        // Sidebar toggle functionality
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            
+            sidebar.classList.toggle('collapsed');
+            
+            if (window.innerWidth > 768) {
+                mainContent.classList.toggle('expanded');
+            }
+            
+            const isCollapsed = sidebar.classList.contains('collapsed');
+            localStorage.setItem('sidebarCollapsed', isCollapsed);
+            
+            const icon = this.querySelector('i');
+            if (sidebar.classList.contains('collapsed')) {
+                icon.classList.remove('fa-chevron-left');
+                icon.classList.add('fa-chevron-right');
+            } else {
+                icon.classList.remove('fa-chevron-right');
+                icon.classList.add('fa-chevron-left');
+            }
+        });
+
+        // Load saved sidebar state
+        window.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            const toggleBtn = document.getElementById('sidebarToggle');
+            const icon = toggleBtn.querySelector('i');
+            
+            const savedState = localStorage.getItem('sidebarCollapsed');
+            
+            if (savedState === 'true') {
+                sidebar.classList.add('collapsed');
+                if (window.innerWidth > 768) {
+                    mainContent.classList.add('expanded');
+                }
+                icon.classList.remove('fa-chevron-left');
+                icon.classList.add('fa-chevron-right');
+            }
+        });
+
+        // Settings Page Functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mode switching
+            const userModeBtn = document.getElementById('userModeBtn');
+            const variableModeBtn = document.getElementById('variableModeBtn');
+            const userModeDiv = document.getElementById('userManagementMode');
+            const variableModeDiv = document.getElementById('variableConfigMode');
+
+            userModeBtn.addEventListener('click', function() {
+                userModeDiv.style.display = 'block';
+                variableModeDiv.style.display = 'none';
+                userModeBtn.classList.add('active');
+                variableModeBtn.classList.remove('active');
+            });
+
+            variableModeBtn.addEventListener('click', function() {
+                userModeDiv.style.display = 'none';
+                variableModeDiv.style.display = 'block';
+                userModeBtn.classList.remove('active');
+                variableModeBtn.classList.add('active');
+            });
+
+            // Password visibility toggle
+            const togglePassword = document.getElementById('togglePassword');
+            const passwordField = document.getElementById('password');
+            
+            togglePassword.addEventListener('click', function() {
+                const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordField.setAttribute('type', type);
+                this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+            });
+
+            // Form validation and submission
+            const addUserForm = document.getElementById('addUserForm');
+            const variableForm = document.getElementById('variableForm');
+            const successMessage = document.getElementById('successMessage');
+            const errorMessage = document.getElementById('errorMessage');
+
+            // User form validation
+            addUserForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const password = document.getElementById('password').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                
+                if (password !== confirmPassword) {
+                    showError('Passwords do not match!');
+                    return;
+                }
+                
+                if (password.length < 8) {
+                    showError('Password must be at least 8 characters long!');
+                    return;
+                }
+                
+                // Simulate form submission
+                const addUserBtn = document.getElementById('addUserBtn');
+                addUserBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Adding...';
+                addUserBtn.disabled = true;
+                
+                // In real implementation, this would be an AJAX call
+                setTimeout(() => {
+                    showSuccess('User added successfully!');
+                    addUserBtn.innerHTML = '<i class="fas fa-user-plus me-2"></i>Add User';
+                    addUserBtn.disabled = false;
+                    addUserForm.reset();
+                }, 1500);
+            });
+
+            // Variable form submission
+            variableForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const saveBtn = document.getElementById('saveVariablesBtn');
+                saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+                saveBtn.disabled = true;
+                
+                // In real implementation, this would be an AJAX call
+                setTimeout(() => {
+                    showSuccess('Variables updated successfully!');
+                    saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>Save All Variables';
+                    saveBtn.disabled = false;
+                }, 1500);
+            });
+
+            // Reset user form
+            document.getElementById('resetUserForm').addEventListener('click', function() {
+                addUserForm.reset();
+            });
+
+            // Helper functions
+            function showSuccess(message) {
+                document.getElementById('successText').textContent = message;
+                successMessage.style.display = 'block';
+                errorMessage.style.display = 'none';
+                
+                setTimeout(() => {
+                    successMessage.style.display = 'none';
+                }, 5000);
+            }
+
+            function showError(message) {
+                document.getElementById('errorText').textContent = message;
+                errorMessage.style.display = 'block';
+                successMessage.style.display = 'none';
+                
+                setTimeout(() => {
+                    errorMessage.style.display = 'none';
+                }, 5000);
+            }
+
+            function resetVariables() {
+                if (confirm('Are you sure you want to reset all variables to their default values?')) {
+                    // In real implementation, this would reset the form or make an AJAX call
+                    showSuccess('Variables reset to defaults!');
+                }
+            }
+
+            // Placeholder functions for user actions
+            window.editUser = function(userId) {
+                alert('Edit user with ID: ' + userId);
+                // In real implementation, this would open a modal or redirect to edit page
+            };
+
+            window.deleteUser = function(userId) {
+                if (confirm('Are you sure you want to delete this user?')) {
+                    // In real implementation, this would make an AJAX call
+                    showSuccess('User deleted successfully!');
+                    // Reload or remove the row from the table
+                }
+            };
+
+            // Adjust on window resize
+            window.addEventListener('resize', function() {
+                const sidebar = document.getElementById('sidebar');
+                const mainContent = document.getElementById('mainContent');
+                
+                if (window.innerWidth > 768) {
+                    sidebar.style.marginLeft = '0px';
+                    if (sidebar.classList.contains('collapsed')) {
+                        mainContent.classList.add('expanded');
+                    }
+                } else {
+                    mainContent.classList.remove('expanded');
+                    sidebar.style.marginLeft = sidebar.classList.contains('collapsed') ? '-80px' : '-260px';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

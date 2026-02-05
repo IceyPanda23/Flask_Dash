@@ -1,4 +1,4 @@
-#!/Flask_Dashboard/dev/bin/python3
+#!/Flask_Dash/dev/bin/python3.11
 # -*- coding: utf-8 -*-
 import re
 import sys

@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Dashboard</title>
+
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    
+
+</head>
+<body>
+    <!-- Mobile Toggle Button (for mobile view) -->
+    <button class="mobile-toggle" id="mobileToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="toggle-btn" id="sidebarToggle">
+            <i class="fas fa-chevron-left"></i>
+        </div>
+        <!-- Logo Section -->
+        <div class="sidebar-header">
+            <img src="{{ url_for('static', filename='image_logo.png') }}" alt="Image Registrars" class="logo-img">
+            <h5 class="text-white mb-1">Image Dashboard</h5>
+            <small class="text-white-50">Registration System</small>
+        </div>
+
+
+        <!-- Navigation Menu -->
+        <div class="sidebar-nav">
+            <ul class="list-unstyled">
+                <!-- Dashboard - ACTIVE -->
+                <li class="nav-item">
+                    <a href="{{ url_for('dashboard') }}" class="nav-link active">
+                        <div class="nav-icon">
+                            <i class="fas fa-tachometer-alt"></i>
+                        </div>
+                        <span>Dashboard</span>
+                        <div class="collapsed-tooltip">Dashboard</div>
+                    </a>
+                </li>
+
+                <!-- Placeholder: Images -->
+                <li class="nav-item">
+                    <a href="{{ url_for('settings') }}" class="nav-link">
+                        <div class="nav-icon">
+                            <i class="fas fa-images"></i>
+                        </div>
+                        <span>MasterFile Records</span>
+                        
+                        <div class="collapsed-tooltip">MasterFile Records</div>
+                    </a>
+                </li>
+
+                {% if role == '1' %}
+                <!-- Placeholder: Users -->
+                <li class="nav-item">
+                    <a href="" class="nav-link">
+                        <div class="nav-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <span>Users</span>
+                        
+                        <div class="collapsed-tooltip">Administrator Settings</div>
+                    </a>
+                </li>
+                {% endif %}
+
+             
+
+            </ul>
+        </div>
+
+        <!-- Logout Button -->
+
+        <div class="sidebar-footer">
+            <form action="" method="post" class="w-100">
+                <button type="submit" class="btn btn-outline-light w-100" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt me-2"></i>
+                    <span>Logout</span>
+                </button>
+                <div class="logout-tooltip">Logout</div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title mb-2">Welcome to Dashboard</h1>
+                <p class="text-muted mb-0">Manage your applicants' payments and view analytics</p>
+            </div>
+            <div class="d-flex align-items-center">
+                <div class="user-section">
+                    <div class="text-center">
+                        <div class="user-avatar">
+                            {{ username[0]|upper }}
+                        </div>
+                        <h6 class="mb-0 text-black">Welcome {{ username }},</h6>
+                        <small class="text-black-50">
+                            {% if role == '1' %}
+                                <i class="fas fa-circle text-success" style="font-size: 8px;"></i> Online
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- Statistics Cards - Modern Design -->
+        <div class="row mb-4">
+            <!-- Capitalization Card -->
+            <div class="col-md-6 col-sm-12 mb-3">
+                <div class="card text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px;">
+                    <div class="card-body p-4">
+                        <!-- Header with Icon and Text -->
+                        <div class="d-flex align-items-center justify-content-between mb-4">
+                                <!-- Capitalization Text Stack -->
+                                <div>
+                                    <div class="fw-bold fs-5 mb-1">CAPITALIZATION</div>
+                                    <div class="fw-bold fs-2">{{ capitalization }}</div>
+                                </div>
+                            <!-- Icon and Text Group -->
+                            <!-- <div class="d-flex align-items-center"> -->
+                                <!-- Circular Icon Container -->
+                                <div class="bg-white rounded-circle d-flex align-items-center justify-content-center shadow-sm me-3" 
+                                    style="width: 65px; height: 65px;">
+                                    <i class="bi bi-graph-up-arrow fa-2x text-primary"></i>
+                                </div>
+                        </div>
+                        
+                        <!-- Stats Section - Horizontal Layout -->
+                        <div class="row mt-4 pt-4 border-top border-white-25">
+                            <div class="col-3 text-center">
+                                <div class="fw-bold fs-5">{{ notes_on_offer|default(0) }}</div>
+                                <small class="opacity-75">Notes on Offer</small>
+                            </div>
+                            <div class="col-3 text-center border-start border-end border-white-25">
+                                <div class="fw-bold fs-5">{{ price_value|default(0) }}</div>
+                                <small class="opacity-75">Price/Value</small>
+                            </div>
+                            <div class="col-3 text-center border-end border-white-35">
+                                <div class="fw-bold fs-5">{{ days_countdown|default(0) }}</div>
+                                <small class="opacity-75">Days Countdown</small>
+                            </div>
+                            <div class="col-3 text-center">
+                                <div class="fw-bold fs-5">{{ status|default(0) }}</div>
+                                <small class="opacity-75">Status</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Payments Card -->
+            <div class="col-md-6 col-sm-12 mb-3">
+                <div class="card text-white" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 15px;">
+                    <div class="card-body p-4">
+                        <!-- Header with Text and Icon -->
+                        <div class="d-flex align-items-center justify-content-between mb-4">
+                            <!-- Payments Text -->
+                            <div>
+                                <div class="fw-bold fs-5 mb-1">TARGET</div>
+                                <div class="fw-bold fs-2">1000</div>
+                            </div>
+                            
+                            <!-- Circular Icon Container -->
+                            <div class="bg-white rounded-circle d-flex align-items-center justify-content-center shadow-sm"
+                                style="width: 65px; height: 65px;">
+                                <span class="fw-bold text-success">Ksh</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Stats Section - Horizontal Layout -->
+                        <div class="row mt-3 pt-3 border-top border-white-25">
+                            <div class="col-3 text-center">
+                                <div class="fw-bold fs-5">{{ card2_value1|default(0) }}</div>
+                                <small class="opacity-75">Notes Applied</small>
+                            </div>
+                            <div class="col-3 text-center border-start border-end border-white-25">
+                                <div class="fw-bold fs-5">{{ card2_value2|default(0) }}</div>
+                                <small class="opacity-75">Target Realization</small>
+                            </div>
+                            <div class="col-3 text-center border-end border-white-25">
+                                <div class="fw-bold fs-5">{{ card2_value3|default(0) }}</div>
+                                <small class="opacity-75">Paid Amount</small>
+                            </div>
+                            <div class="col-3 text-center">
+                                <div class="fw-bold fs-5">{{ card2_value4|default(0) }}</div>
+                                <small class="opacity-75">Pending Amount</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Charts Section -->
+        <div class="row">
+            <div class="col-lg-12 mb-4">
+                <!-- Line Chart with Time Period Buttons -->
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-chart-line me-2 text-primary"></i>
+                            Application Activity
+                        </h5>
+                        
+                        <!-- Time Period Buttons -->
+                        <div class="btn-group btn-group-sm" role="group" aria-label="Time period">
+                            <input type="radio" class="btn-check" name="timePeriod" id="periodWeek" autocomplete="off" 
+                                onclick="updateChart('week')" checked>
+                            <label class="btn btn-outline-primary" for="periodWeek">
+                                <i class="fas fa-calendar-week me-1"></i> This Week
+                            </label>
+                            
+                            <input type="radio" class="btn-check" name="timePeriod" id="periodMonth" autocomplete="off"
+                                onclick="updateChart('month')">
+                            <label class="btn btn-outline-primary" for="periodMonth">
+                                <i class="fas fa-calendar-alt me-1"></i> This Month
+                            </label>
+                            
+                            <input type="radio" class="btn-check" name="timePeriod" id="periodYear" autocomplete="off"
+                                onclick="updateChart('year')">
+                            <label class="btn btn-outline-primary" for="periodYear">
+                                <i class="fas fa-calendar me-1"></i> This Year
+                            </label>
+                        </div>
+                        <!-- Add this AFTER the existing button group -->
+                        <div class="d-none d-md-block">
+                            <!-- The button group you already have -->
+                            <div class="btn-group btn-group-sm" role="group" aria-label="Time period">
+                                <!-- ... buttons ... -->
+                            </div>
+                        </div>
+
+                        <div class="d-md-none mt-2">
+                            <!-- Dropdown for mobile -->
+                            <div class="dropdown">
+                                <button class="btn btn-primary dropdown-toggle" type="button" 
+                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    <span id="currentPeriod">This Week</span>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item" href="#" onclick="updateChart('week'); document.getElementById('currentPeriod').textContent = 'This Week';">
+                                            <i class="fas fa-calendar-week me-2"></i> This Week
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="#" onclick="updateChart('month'); document.getElementById('currentPeriod').textContent = 'This Month';">
+                                            <i class="fas fa-calendar-alt me-2"></i> This Month
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="#" onclick="updateChart('year'); document.getElementById('currentPeriod').textContent = 'This Year';">
+                                            <i class="fas fa-calendar me-2"></i> This Year
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body">
+                        <!-- Chart Container -->
+                        <div class="chart-container" style="position: relative; height: 300px;">
+                            <canvas id="lineChart"></canvas>
+                        </div>
+                        
+                        <!-- Loading Spinner (hidden by default) -->
+                        <div id="chartLoading" class="text-center mt-3" style="display: none;">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="text-muted mt-2">Updating chart data...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Mobile toggle functionality
+        document.getElementById('mobileToggle').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.style.marginLeft = sidebar.style.marginLeft === '0px' ? '-260px' : '0px';
+        });
+
+        // Coming soon message
+        function showComingSoon() {
+            alert('This feature is coming soon!Nipee some time');
+            return false;
+        }
+
+        // Charts
+        // Line Chart
+        // Global chart variable
+        let lineChart;
+
+        // Initial chart data
+        const initialData = {
+            labels: {{ line_labels|default(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'])|safe }},
+            datasets: [{
+                label: 'Registrations',
+                data: {{ line_data|default([12, 19, 8, 15, 12, 18, 10])|safe }},
+                borderColor: 'rgb(54, 162, 235)',
+                backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: 'rgb(54, 162, 235)',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 5,
+                pointHoverRadius: 7
+            }]
+        };
+
+        // Chart configuration
+        const chartConfig = {
+            type: 'line',
+            data: initialData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            font: {
+                                size: 14,
+                                family: "'Segoe UI', Roboto, sans-serif"
+                            }
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                        titleFont: {
+                            size: 13
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
+                        padding: 10
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            font: {
+                                size: 12
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Number of Registrations',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            font: {
+                                size: 12
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Time Period',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'nearest'
+                }
+            }
+        };
+
+        // Initialize chart when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('lineChart').getContext('2d');
+            lineChart = new Chart(ctx, chartConfig);
+            
+            // Set initial active button
+            document.getElementById('periodWeek').checked = true;
+        });
+
+        // Function to update chart based on selected time period
+        function updateChart(period) {
+            // Show loading spinner
+            document.getElementById('chartLoading').style.display = 'block';
+            
+            // Make AJAX request to get new data
+            fetch(`/?period=${period}`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest'}
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update chart data
+                        lineChart.data.labels = data.line_labels;
+                        lineChart.data.datasets[0].data = data.line_data;
+                        
+                        // Update chart
+                        lineChart.update();
+                        
+                        // Update button states visually
+                        updateButtonStates(period);
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                    
+                    // Hide loading spinner
+                    document.getElementById('chartLoading').style.display = 'none';
+                })
+                .catch(error => {
+                    console.error('Error fetching chart data:', error);
+                    document.getElementById('chartLoading').style.display = 'none';
+                    alert('Failed to load chart data. Please try again.');
+                });
+        }
+
+        // Function to update button active states
+        function updateButtonStates(activePeriod) {
+            const buttons = document.querySelectorAll('.btn-outline-primary');
+            buttons.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.htmlFor === `period${activePeriod.charAt(0).toUpperCase() + activePeriod.slice(1)}`) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+
+
+        // Pie Chart
+        const pieCtx = document.getElementById('pieChart').getContext('2d');
+        const pieChart = new Chart(pieCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Active', 'Pending', 'Completed'],
+                datasets: [{
+                    data: [60, 25, 15],
+                    backgroundColor: [
+                        'rgb(40, 167, 69)',
+                        'rgb(255, 193, 7)',
+                        'rgb(23, 162, 184)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // Auto-hide sidebar on mobile when clicking outside
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.getElementById('mobileToggle');
+            
+            if (window.innerWidth <= 768 && 
+                !sidebar.contains(event.target) && 
+                !toggleBtn.contains(event.target) &&
+                sidebar.style.marginLeft === '0px') {
+                sidebar.style.marginLeft = '-260px';
+            }
+        });
+
+        // Adjust sidebar on window resize
+        window.addEventListener('resize', function() {
+            const sidebar = document.getElementById('sidebar');
+            if (window.innerWidth > 768) {
+                sidebar.style.marginLeft = '0px';
+            }
+        });
+        // Add this to your existing JavaScript
+
+        // Sidebar toggle functionality
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            
+            // Toggle collapsed class
+            sidebar.classList.toggle('collapsed');
+            
+            // Toggle expanded class on main content
+            if (window.innerWidth > 768) {
+                mainContent.classList.toggle('expanded');
+            }
+            
+            // Store state in localStorage
+            const isCollapsed = sidebar.classList.contains('collapsed');
+            localStorage.setItem('sidebarCollapsed', isCollapsed);
+            
+            // Update toggle button icon
+            const icon = this.querySelector('i');
+            if (sidebar.classList.contains('collapsed')) {
+                icon.classList.remove('fa-chevron-left');
+                icon.classList.add('fa-chevron-right');
+            } else {
+                icon.classList.remove('fa-chevron-right');
+                icon.classList.add('fa-chevron-left');
+            }
+        });
+
+        // Load saved sidebar state
+        window.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            const toggleBtn = document.getElementById('sidebarToggle');
+            const icon = toggleBtn.querySelector('i');
+            
+            const savedState = localStorage.getItem('sidebarCollapsed');
+            
+            if (savedState === 'true') {
+                sidebar.classList.add('collapsed');
+                if (window.innerWidth > 768) {
+                    mainContent.classList.add('expanded');
+                }
+                icon.classList.remove('fa-chevron-left');
+                icon.classList.add('fa-chevron-right');
+            }
+        });
+
+        // Update existing mobile toggle to handle collapsed state
+        document.getElementById('mobileToggle').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar.classList.contains('collapsed')) {
+                sidebar.classList.remove('collapsed');
+            }
+            sidebar.style.marginLeft = sidebar.style.marginLeft === '0px' ? '-260px' : '0px';
+        });
+
+        // Adjust on window resize
+        window.addEventListener('resize', function() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            
+            if (window.innerWidth > 768) {
+                sidebar.style.marginLeft = '0px';
+                if (sidebar.classList.contains('collapsed')) {
+                    mainContent.classList.add('expanded');
+                }
+            } else {
+                mainContent.classList.remove('expanded');
+                sidebar.style.marginLeft = sidebar.classList.contains('collapsed') ? '-80px' : '-260px';
+            }
+        });
+    </script>
+</body>
+</html>

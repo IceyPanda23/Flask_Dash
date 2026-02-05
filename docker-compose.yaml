@@ -1,0 +1,72 @@
+services:
+ image_dashboard_ipo_pg:
+  image: postgres:15
+  container_name: IMAGE_DASHBOARD_IPO
+  environment:
+      - POSTGRES_USER=adminsuperadmin2026
+      - POSTGRES_PASSWORD=*Grundig3603644998745
+      - POSTGRES_DB=IMAGE_IPO_DASHBOARD
+  restart: unless-stopped
+  ports:
+    - "43217:5432"
+  volumes:
+    - dashboard_ipoo:/var/lib/postgresql/data
+  networks:
+    - ipo_network
+
+ init_db:
+   image: ipo_app
+   command: python create_tables.py
+   env_file:
+    - .env
+   depends_on:
+    - image_dashboard_ipo_pg
+   networks:
+    - ipo_network
+
+ ipo_app:
+   image: ipo_app
+   build: .
+   env_file:
+    - .env
+   depends_on:
+    - image_dashboard_ipo_pg
+    - ipo_redis
+   volumes:
+    - ./static:/app/static
+    - ./templates:/app/templates
+   networks:
+    - ipo_network
+  
+   deploy:
+     replicas: 3
+   restart: always
+
+ ipo_redis:
+   image: redis:7-alpine
+   container_name: flask_redis
+   networks:
+    - ipo_network
+
+ nginx_ipo:
+   image: nginx:latest
+   container_name: nginx_ipo
+   networks:
+    - ipo_network
+   ports:
+    - "80:80"
+    - "443:443"
+   volumes:
+    - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    - /etc/letsencrypt:/etc/letsencrypt:ro
+    - ./static:/app/static
+   depends_on:
+    - ipo_app
+   restart: unless-stopped
+
+
+volumes:
+    dashboard_ipoo:
+
+networks:
+    ipo_network:

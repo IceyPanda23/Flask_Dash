@@ -1,0 +1,40 @@
+services:
+ image_dashboard_ipo_pg:
+  image: postgres:15
+  container_name: IMAGE_DASHBOARD_IPO
+  environment:
+      - POSTGRES_USER=adminsuperadmin2026
+      - POSTGRES_PASSWORD=*Grundig3603644998745
+      - POSTGRES_DB=IMAGE IPO DASHBOARD
+  restart: unless-stopped
+  ports:
+    - "43217:5432"
+  volumes:
+    - dashboard_ipoo:/var/lib/postgresql/data
+  networks:
+    - ipo_network
+
+
+ ipo_redis:
+   image: redis:7-alpine
+   container_name: flask_redis
+   networks:
+    - ipo_network
+
+ ipo_app_migrate:
+   build: .
+   depends_on:
+     - image_dashboard_ipo_pg
+   command: flask db upgrade
+   networks:
+     - ipo_network
+   volumes:
+     - ./migrations:/app/migrations
+     - ./app:/app
+
+
+volumes:
+  dashboard_ipoo:
+
+networks:
+  ipo_network:
